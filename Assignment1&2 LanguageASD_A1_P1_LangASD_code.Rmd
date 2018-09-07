@@ -41,6 +41,7 @@ If you're not in a project in Rstudio, make sure to set your working directory h
 If you created an rstudio project, then your working directory (the directory with your data and code for these assignments) is the project directory. You can always see which working directory is used with `getwd()`. Note that this may be different in the console than in the Rmd cells (don't ask me why).
 
 ```{r}
+setwd("~/Documents/Cognitive Science/3rd semester/Experimental Methods 3/LanguageDevelopmentASD")
 
 ```
 
@@ -50,6 +51,10 @@ Load the three data sets, after downloading them from dropbox and saving them in
 * Word data: https://www.dropbox.com/s/8ng1civpl2aux58/token_train.csv?dl=0
 
 ```{r}
+
+demo_train <- read.csv("demo_train.csv")
+token_train <- read.csv("token_train.csv")
+lu_train <- read.csv("LU_train.csv")
 
 ```
 
@@ -69,6 +74,17 @@ Tip: Or look through the chapter on data transformation in R for data science (h
 
 
 ```{r}
+library(pacman)
+p_load(gdata)
+
+#renaming the ID variable in all datasets to "ID"
+demo_train <- rename.vars(demo_train, "Child.ID", "ID")
+lu_train <- rename.vars(lu_train, "SUBJ", "ID")
+token_train <- rename.vars(token_train, "SUBJ", "ID")
+
+#renaming the visit variable in all datasets to "Visit"
+lu_train <- rename.vars(lu_train, "VISIT", "Visit")
+token_train <- rename.vars(token_train, "VISIT", "Visit")
 
 ```
 
@@ -76,7 +92,11 @@ Tip: Or look through the chapter on data transformation in R for data science (h
 Tip: There is a package called stringr, which will be very handy for manipulating (text) strings also in furture assignments. We will return to this package later, but for now use the str_extract () to extract only the number from the variable Visit in each data set.
 
 ```{r}
+p_load(stringr)
 
+#homogenizing the visit variable; stringr extracts the numbers, these are assigned
+lu_train$Visit <- str_extract(lu_train$Visit, "[1-6]")
+token_train$Visit <- str_extract(token_train$Visit, "[1-6]")
 ```
 
 2c. We also need to make a small adjustment to the content of the Child.ID coloumn in the demographic data. Within this column, names that are not abbreviations do not end with "." (i.e. Adam), which is the case in the other two data sets (i.e. Adam.). If The content of the two variables isn't identical the data sets will not be merged sufficiently.
@@ -89,6 +109,11 @@ Tip: You will have to do identical work for both data sets, so to save time on t
 
 
 ```{r}
+
+#removing periods in naming
+demo_train$ID <- str_replace_all(demo_train$ID, "[:punct:]", "")
+lu_train$ID <- str_replace_all(lu_train$ID, "[:punct:]", "")
+token_train$ID <- str_replace_all(token_train$ID, "[:punct:]", "")
 
 ```
 
@@ -107,6 +132,11 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the last two into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
+p_load(dplyr, plyr)
+
+sub_demo <- select(demo_train, c(ID, Visit, Ethnicity, Diagnosis, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw))
+sub_lu <- select(lu_train, c(ID, Visit, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd))
+sub_token <- select(token_train, c(ID, Visit, types_MOT, types_CHI, tokens_MOT, tokens_CHI))
 
 ```
 
@@ -115,6 +145,10 @@ Tip: Look up "joins" in R for data science, or google "How to merge datasets in 
 Tip: Joining / merging only works for two data frames at the time.
 
 ```{r}
+
+#combining all three datasets
+all <- join(sub_lu, sub_token)
+all_full <- join(sub_demo, all)
 
 ```
 
