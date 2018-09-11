@@ -216,7 +216,7 @@ Write the data set into a csv file.
 ```{r}
 
 #Writing csv
-write.csv(clean, "LanguageASD.csv")
+write.csv(clean, "LanguageASDv2.csv")
 
 ```
 
@@ -244,13 +244,9 @@ clean %>% filter(CHI_MLU < 1.5, Visit == "1")
 #We also assume that if CHI_MLU does not exist, then neither do the other variables (which seems to be the case)
 clean %>% filter(is.na(CHI_MLU))
 
-
-
-#Summarising 
-#Filtering all kids that have a visit with NA values (since in MLU, NA is in all)
+#Summarising solution counting the amount of NA rows pr. child
 clean$ID <- as.character(clean$ID)
 
-#Solution counting the amount of NA rows pr. child
 detach(package:plyr)
 library(dplyr)
 
@@ -306,6 +302,6 @@ clean_means <- clean %>% mutate(mean_overall = mean(tokens_CHI, na.rm = T))
 #Adding a column with mean words spoken across visits for the individual child
 clean_means <- clean_means %>% group_by(ID) %>% mutate(mean_tokens = mean(tokens_CHI, na.rm = T))
 
-#Indsæt svar her :-)
+#3: Some of the other variables might be relevant to the interpretation of language production - for example, if the MLU of the parent is also low, this might help determine some of the predisposistions of the individual child. All the demographic data is also relevant in the same sense. 
 
 ```
