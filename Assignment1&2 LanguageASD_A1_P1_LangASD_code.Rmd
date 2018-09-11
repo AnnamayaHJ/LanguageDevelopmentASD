@@ -167,6 +167,24 @@ So let's make sure that we select only these variables as collected during the f
 
 ```{r}
 
+p_load(sjmisc, tidyverse)
+
+#Making a subset with the relevant variables
+rep_val <- subset(all_full, Visit == 1, c(ID, ADOS, MullenRaw, ExpressiveLangRaw))
+
+#Renaming variables in new data set
+rep_val <- rename.vars(rep_val, "ADOS", "ADOS1")
+rep_val <- rename.vars(rep_val, "MullenRaw", "MullenRaw1")
+rep_val <- rename.vars(rep_val, "ExpressiveLangRaw", "ExpressiveLangRaw1")
+
+#Merging the variables back into the data frame
+full_visit <- join(rep_val, all_full)
+
+#Removing the old, empty variables
+full_visit_clean <- remove_var(full_visit, c(ADOS, MullenRaw, ExpressiveLangRaw))
+
+#Using select to make a clean dataset with variables in the right order (removal above can be omitted)
+clean <- select(full_visit_clean, c(ID, Diagnosis, Gender, Age, Ethnicity, Visit, ADOS1, MullenRaw1, ExpressiveLangRaw1, CHI_MLU, CHI_LUstd, MOT_MLU, MOT_LUstd, types_CHI, types_MOT, tokens_CHI, tokens_MOT))
 
 ```
 
@@ -181,12 +199,24 @@ Tip: google "R how to convert character to integer" or look up the as.??? functi
 
 ```{r}
 
+clean$ID <- as.factor(clean$ID)
+clean$ID <- as.numeric(clean$ID)
+
+#Turning the 1s and 2s into M and F in the gender variable
+clean$Gender <- ifelse(clean$Gender == "1", "F", "M")
+
+#Turning the As and Bs intro ASD and TD in the diagnosis variable
+clean$Diagnosis <- ifelse(clean$Diagnosis == "A", "ASD", "TD")
+
 ```
 
 
 Write the data set into a csv file. 
 
 ```{r}
+
+#Writing csv
+write.csv(clean, "LanguageASD.csv")
 
 ```
 
@@ -204,6 +234,30 @@ List all kids who:
 
 ```{r}
 
+#Kids with MLU > 2.7
+clean %>% filter(CHI_MLU > 2.7)
+
+#Kids with MLU < 1.5 first visit
+clean %>% filter(CHI_MLU < 1.5, Visit == "1")
+
+#Filtering all rows containing NAs, hereby assuming that a visit/trial was not completed if there is no data
+#We also assume that if CHI_MLU does not exist, then neither do the other variables (which seems to be the case)
+clean %>% filter(is.na(CHI_MLU))
+
+
+
+#Summarising 
+#Filtering all kids that have a visit with NA values (since in MLU, NA is in all)
+clean$ID <- as.character(clean$ID)
+
+#Solution counting the amount of NA rows pr. child
+detach(package:plyr)
+library(dplyr)
+
+clean %>%
+  group_by(ID) %>%
+  filter(is.na(CHI_MLU)) %>%
+  summarise(n())
 
 ```
 
@@ -214,7 +268,11 @@ USING ARRANGE
 2. Sort kids to find the kid who produced the least amount of words on the 1st visit.
 
 ```{r}
+#Kids producing most words on the last visit
+clean %>% filter(Visit == "6") %>% arrange(desc(tokens_CHI))
 
+#Kids producing least words on the first visit
+clean %>% filter(Visit == "1") %>% arrange(tokens_CHI)
 
 ```
 
@@ -224,16 +282,30 @@ USING SELECT
 2. What happens if you include the name of a variable multiple times in a select() call?
 
 ```{r}
+#Filtering only ASD children and selecting these for a new subset including the two other variables
+clean %>% filter(Diagnosis == "ASD") %>% select(Diagnosis, CHI_MLU, tokens_CHI)
+
+#Attempting with a variable included multiple times
+clean %>% filter(Diagnosis == "ASD") %>% select(Diagnosis, Diagnosis, CHI_MLU, tokens_CHI)
+
+#Nothing happens. It's still only included once. Såååå deeeetttttt :i
 
 ```
 
 
 USING MUTATE, SUMMARISE and PIPES
 1. Add a column to the data set that represents the mean number of words spoken during all visits.
-2. Use the summarise function and pipes to add an column in the data set containing the mean amount of words produced by each trial across all visits. HINT: group by Child.ID 
+2. Use the summarise function and pipes to add a column in the data set containing the mean amount of words produced by each trial (CHILD????) across all visits. HINT: group by Child.ID 
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
+#Adding a column with mean words spoken across visits for the individual child
+clean$ID <- as.character(clean$ID)
+clean_means <- clean %>% mutate(mean_overall = mean(tokens_CHI, na.rm = T))
 
+#Adding a column with mean words spoken across visits for the individual child
+clean_means <- clean_means %>% group_by(ID) %>% mutate(mean_tokens = mean(tokens_CHI, na.rm = T))
+
+#Indsæt svar her :-)
 
 ```
