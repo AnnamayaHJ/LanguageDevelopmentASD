@@ -2,7 +2,10 @@
 title: "A1_P1_Student"
 author: "Riccardo Fusaroli"
 date: "01/07/2018"
-output: html_document
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
 ---
 
 # Assignment 1, Part 1: Language development in Autism Spectrum Disorder (ASD) - Brushing up your code skills
@@ -51,7 +54,7 @@ Load the three data sets, after downloading them from dropbox and saving them in
 * Word data: https://www.dropbox.com/s/8ng1civpl2aux58/token_train.csv?dl=0
 
 ```{r}
-
+#loading datasets
 demo_train <- read.csv("demo_train.csv")
 token_train <- read.csv("token_train.csv")
 lu_train <- read.csv("LU_train.csv")
@@ -75,7 +78,7 @@ Tip: Or look through the chapter on data transformation in R for data science (h
 
 ```{r}
 library(pacman)
-p_load(gdata)
+p_load(gdata, pdflatex, TeX)
 
 #renaming the ID variable in all datasets to "ID"
 demo_train <- rename.vars(demo_train, "Child.ID", "ID")
@@ -132,7 +135,7 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the last two into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
-p_load(dplyr, plyr)
+p_load(dplyr, tidyverse)
 
 sub_demo <- select(demo_train, c(ID, Visit, Ethnicity, Diagnosis, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw))
 sub_lu <- select(lu_train, c(ID, Visit, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd))
@@ -145,6 +148,8 @@ Tip: Look up "joins" in R for data science, or google "How to merge datasets in 
 Tip: Joining / merging only works for two data frames at the time.
 
 ```{r}
+
+p_load(plyr)
 
 #combining all three datasets
 all <- join(sub_lu, sub_token)
@@ -284,7 +289,7 @@ clean %>% filter(Diagnosis == "ASD") %>% select(Diagnosis, CHI_MLU, tokens_CHI)
 #Attempting with a variable included multiple times
 clean %>% filter(Diagnosis == "ASD") %>% select(Diagnosis, Diagnosis, CHI_MLU, tokens_CHI)
 
-#Nothing happens. It's still only included once. Såååå deeeetttttt :i
+#Nothing happens. It's still only included once.
 
 ```
 
@@ -302,6 +307,6 @@ clean_means <- clean %>% mutate(mean_overall = mean(tokens_CHI, na.rm = T))
 #Adding a column with mean words spoken across visits for the individual child
 clean_means <- clean_means %>% group_by(ID) %>% mutate(mean_tokens = mean(tokens_CHI, na.rm = T))
 
-#3: Some of the other variables might be relevant to the interpretation of language production - for example, if the MLU of the parent is also low, this might help determine some of the predisposistions of the individual child. All the demographic data is also relevant in the same sense. 
+#3: Some of the other variables might be relevant to the interpretation of language production - for example, if the MLU of the parent is also low, this might help determine some of the predisposistions of the individual child. All the demographic data is also relevant in the same sense. In general one would lose a lot of valuable information by only referring to the means, especially when it comes to interpreting and understanding observed differences.
 
 ```
