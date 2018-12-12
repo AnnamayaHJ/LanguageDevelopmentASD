@@ -78,7 +78,7 @@ Tip: Or look through the chapter on data transformation in R for data science (h
 
 ```{r}
 library(pacman)
-p_load(gdata, pdflatex, TeX)
+p_load(gdata, pdflatex, TeX, stringr, tidyverse)
 
 #renaming the ID variable in all datasets to "ID"
 demo_train <- rename.vars(demo_train, "Child.ID", "ID")
@@ -95,8 +95,6 @@ token_train <- rename.vars(token_train, "VISIT", "Visit")
 Tip: There is a package called stringr, which will be very handy for manipulating (text) strings also in furture assignments. We will return to this package later, but for now use the str_extract () to extract only the number from the variable Visit in each data set.
 
 ```{r}
-p_load(stringr)
-
 #homogenizing the visit variable; stringr extracts the numbers, these are assigned
 lu_train$Visit <- str_extract(lu_train$Visit, "[1-6]")
 token_train$Visit <- str_extract(token_train$Visit, "[1-6]")
@@ -135,8 +133,6 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the last two into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
-p_load(dplyr, tidyverse)
-
 sub_demo <- select(demo_train, c(ID, Visit, Ethnicity, Diagnosis, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw))
 sub_lu <- select(lu_train, c(ID, Visit, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd))
 sub_token <- select(token_train, c(ID, Visit, types_MOT, types_CHI, tokens_MOT, tokens_CHI))
@@ -172,7 +168,7 @@ So let's make sure that we select only these variables as collected during the f
 
 ```{r}
 
-p_load(sjmisc, tidyverse)
+p_load(sjmisc)
 
 #Making a subset with the relevant variables
 rep_val <- subset(all_full, Visit == 1, c(ID, ADOS, MullenRaw, ExpressiveLangRaw))
@@ -221,7 +217,7 @@ Write the data set into a csv file.
 ```{r}
 
 #Writing csv
-write.csv(clean, "LanguageASDv2.csv")
+write.csv(clean, "LanguageASD_final.csv")
 
 ```
 
